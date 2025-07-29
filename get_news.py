@@ -24,24 +24,20 @@ headers = {
     "User-Agent": ua.random
 }
 
-# --- 数据清洗与解析 (最终版) ---
+# --- 数据清洗与解析 ---
 
 def ultimate_clean_text(raw_html: str) -> str:
-    """工业级深度清洁：解码、去标签、净化文本"""
     if not isinstance(raw_html, str):
         return ""
-    # 第1步：深度解码HTML实体
     text = raw_html
     while True:
         unescaped = html.unescape(text)
         if unescaped == text:
             break
         text = unescaped
-    # 第2步：用BeautifulSoup移除所有HTML标签
     text = BeautifulSoup(text, "html.parser").get_text(strip=True)
-    # 第3步：用正则表达式净化文本，移除控制字符和多余空白
-    text = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', text) # 移除控制字符
-    text = re.sub(r'\s+', ' ', text).strip() # 将多个空白压缩为一个空格
+    text = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', text)
+    text = re.sub(r'\s+', ' ', text).strip()
     return text
 
 def parse_sina_time(time_str: str) -> datetime:
@@ -68,7 +64,7 @@ def get_sentiment_score(text: str) -> float:
         return 0.5
     return SnowNLP(text).sentiments
 
-# --- 核心功能函数 ---
+# --- 核心功能函数 (已恢复到简洁版本) ---
 def fetch_news(keyword: str, pages: int = 2) -> list[dict]:
     news_list = []
     for page in range(1, pages + 1):
@@ -85,7 +81,6 @@ def fetch_news(keyword: str, pages: int = 2) -> list[dict]:
                     summary_tag = item.find("p", class_="content")
                     time_tag = item.find("span", class_="fgray_time")
                     
-                    # 在这里进行终极清洁
                     title = ultimate_clean_text(title_tag.get_text() if title_tag else "")
                     summary = ultimate_clean_text(summary_tag.get_text() if summary_tag else "")
 
@@ -145,7 +140,7 @@ def run_news_crawl():
     print("开始获取新数据...")
     all_news = []
     for keyword in KEYWORDS:
-        print(f"正在抓取关键词：{keyword}")
+        print(f"--- 正在处理关键词: {keyword} ---")
         news = fetch_news(keyword, pages=2)
         all_news.extend(news)
     

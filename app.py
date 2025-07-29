@@ -160,6 +160,23 @@ def load_data(filepath: Path) -> pd.DataFrame:
 # --- 主应用界面 ---
 st.title("🥇 黄金市场洞察平台")
 
+# --- 侧边栏 --- 
+st.sidebar.header("⚙️ 控制与筛选")
+
+# 将刷新按钮移动到侧边栏
+if st.sidebar.button("🔄 刷新新闻"):
+    with st.spinner("正在后台获取最新新闻，请稍候..."):
+        message, count = run_news_crawl()
+        if count > 0:
+            st.toast(f"✅ {message}", icon="🎉")
+        else:
+            st.toast(f"ℹ️ {message}", icon="⏱️")
+    st.cache_data.clear()
+    st.rerun()
+
+st.sidebar.markdown("---_---")
+
+# --- 实时价格展示 ---
 st.markdown("---_---")
 gold_price, cny_rate = get_market_data()
 col1, col2, col3 = st.columns(3)
@@ -189,20 +206,10 @@ if not df.empty and 'sentiment' in df.columns:
         st.plotly_chart(bar_fig, use_container_width=True)
 
 st.markdown("### 财经新闻速递")
-if st.button("🔄 刷新新闻"):
-    with st.spinner("正在后台获取最新新闻，请稍候..."):
-        message, count = run_news_crawl()
-        if count > 0:
-            st.toast(f"✅ {message}", icon="🎉")
-        else:
-            st.toast(f"ℹ️ {message}", icon="⏱️")
-    st.cache_data.clear()
-    st.rerun()
 
 if df.empty:
     st.warning("数据文件 (data/news_data.csv) 不存在或为空。请先运行 `get_news.py` 脚本来获取数据。")
 else:
-    st.sidebar.header("🔍 新闻筛选器")
     sentiment_options = {"全部": "all", "利好": "bullish", "利空": "bearish", "中性": "neutral"}
     selected_sentiment = st.sidebar.selectbox("按情绪筛选", options=list(sentiment_options.keys()))
     all_keywords = ["沪金", "黄金期货", "COMEX黄金", "实物黄金", "黄金ETF", "美联储", "利率"]
@@ -234,7 +241,6 @@ else:
         sentiment_class = row.get('sentiment_category', "中性").replace("利好", "bullish").replace("利空", "bearish").replace("中性", "neutral")
         sentiment_text = f"🐂 利好" if sentiment_class == "bullish" else (f"🐻 利空" if sentiment_class == "bearish" else f"😐 中性")
 
-        # 渲染时不再需要任何转义，因为数据源是干净的
         st.markdown(f'''
         <div class="card">
             <div class="sentiment-badge {sentiment_class}">{sentiment_text}</div>
