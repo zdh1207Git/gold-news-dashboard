@@ -1,0 +1,19 @@
+# Python virtual environment
+.venv/
+virtual/
+env/
+
+# IDE and editor specific files
+.idea/
+.vscode/
+*.swp
+
+# Python cache files
+__pycache__/
+*.pyc
+
+# Data files - We don't want to commit the data itself to the repository
+/data/
+
+# Streamlit specific files
+.streamlit/
