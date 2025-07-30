@@ -84,12 +84,18 @@ def fetch_news(keyword: str, pages: int = 2) -> list[dict]:
                     title = ultimate_clean_text(title_tag.get_text() if title_tag else "")
                     summary = ultimate_clean_text(summary_tag.get_text() if summary_tag else "")
 
-                    link_tag = title_tag.find("a") if title_tag else None
-                    link = link_tag["href"] if link_tag else None
+                    link_tag = None
+                    # 确保 title_tag 是一个有效的 Tag 对象，然后再在其中查找
+                    if isinstance(title_tag, Tag):
+                        link_tag = title_tag.find("a")
+                    
+                    # 同样，确保 link_tag 是有效的 Tag 对象，然后再获取 href 属性
+                    link = link_tag["href"] if isinstance(link_tag, Tag) else None
                     pub_time_str = time_tag.get_text(strip=True) if time_tag else None
-                    parsed_time = parse_sina_time(pub_time_str)
 
-                    if title and summary:
+                    # 只有当标题、摘要和发布时间都存在时，才处理该新闻
+                    if title and summary and pub_time_str:
+                        parsed_time = parse_sina_time(pub_time_str)
                         content_to_check = title + summary
                         sentiment = get_sentiment_score(content_to_check)
                         if any(kw in content_to_check for kw in KEYWORDS):
